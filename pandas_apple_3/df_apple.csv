@@ -1,9 +1,0 @@
-Product_ID,Product_Type,Model,Release_Date,Price,In_Stock,Category_Type
-1,MacBook,"MacBook Pro 13""",2021-05-21,1299.99,True,desktop
-2,iPad,iPad Air,2022-03-18,599.99,False,mobile
-3,iPhone,iPhone 13,2023-09-24,999.99,True,mobile
-4,Watch,Watch Series 7,2021-10-15,399.99,True,wearable
-5,AirPods,AirPods Pro,2021-05-18,249.99,False,wearable
-6,MacMini,,,699.99,True,desktop
-7,,MacMini M1,2020-11-17,,False,desktop
-8,MacBook Air,MacBook Air M1,2020-12-22,999.99,,desktop
