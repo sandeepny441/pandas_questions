@@ -5,7 +5,28 @@ sns.kdeplot(df[col])
 df[col].kurtosis()
 df[col].skew()
 sns.boxplot(df[col])
+=============================================
+# OUTLIERS
 q1 = df[col].quantile(25)
+# Step 1: Calculate Q1 and Q3
+
+Q1 = df[col].quantile(0.25)
+Q3 = df[col].quantile(0.75)
+
+# Step 2: Compute IQR
+IQR = Q3 - Q1
+
+# Step 3: Determine the bounds
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# Step 4: Identify outliers
+outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
+
+# If you just want to filter out the outliers
+filtered_data = df[(df[col] >= lower_bound) & (df[col] <= upper_bound)]
+
+=============================================
 corr_matrix = df[nuemrical_cols].corr 
 sns.heatmap(corr_matrix, 
             annot=True, 
@@ -102,6 +123,17 @@ target_correlation = correlation_matrix['Target_Variable']
 from scipy.stats import pointbiserialr
 correlation, p_value = pointbiserialr(df['Numerical_Column'], df['Binary_Target'])
 
+
+# adding label encoded features back to DF
+# One-hot encode 'level' column
+encoder = OneHotEncoder()
+level_encoded = encoder.fit_transform(df[['level']]).toarray()
+level_df = pd.DataFrame(level_encoded, columns=encoder.get_feature_names_out(['level']))
+df = pd.concat([df, level_df], axis=1).drop(['level'], axis=1)
+======================================================================
+======================================================================
+
+
 # dimensionality reduction -- PCA 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -162,6 +194,121 @@ rf_model.fit(X_train, y_train)
 # Making Predictions
 rf_pred = rf_model.predict(X_test)
 ===================================================
+
+
+
+
+
+
+
+===================================================
+
+
+
+
+
+
+
+
+===================================================
+# GRID search
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+
+# Load your dataset
+# df = pd.read_csv('your_dataset.csv')
+
+# For illustration purposes, creating a sample dataset
+from sklearn.datasets import make_classification
+X, y = make_classification(n_samples=1000, n_features=20, n_classes=2, random_state=42)
+
+# Split dataset into training set and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)  # 70% training and 30% testing
+
+# Create Logistic Regression model
+logreg = LogisticRegression(random_state=42)
+
+# Train model
+logreg.fit(X_train, y_train)
+
+# Predictions
+y_pred = logreg.predict(X_test)
+
+# Model Evaluation
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+print("Precision:", metrics.precision_score(y_test, y_pred))
+print("Recall:", metrics.recall_score(y_test, y_pred))
+
+# Cross-validation
+cv_scores = cross_val_score(logreg, X, y, cv=5)
+print("Cross-validation Scores:", cv_scores)
+print("Mean CV Score:", np.mean(cv_scores))
+
+# Hyperparameter Tuning using GridSearchCV
+param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100], 'penalty': ['l1', 'l2']}
+grid = GridSearchCV(logreg, param_grid, cv=5)
+grid.fit(X_train, y_train)
+
+# Print the best parameters found
+print("Best Hyperparameters:", grid.best_params_)
+print("Best CV Score:", grid.best_score_)
+
+# You can then use grid.best_estimator_ as your model
+final_model = grid.best_estimator_
+final_predictions = final_model.predict(X_test)
+
+# Final Model Evaluation
+print("Final Accuracy:", metrics.accuracy_score(y_test, final_predictions))
+print("Final Precision:", metrics.precision_score(y_test, final_predictions))
+print("Final Recall:", metrics.recall_score(y_test, final_predictions))
+
+
+===================================================
+#Random Search CV
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import uniform
+
+# Hyperparameter grid
+param_dist = {
+    'C': uniform(loc=0, scale=4),
+    'penalty': ['l1', 'l2'],
+}
+
+# Instantiating RandomizedSearchCV object
+random_search = RandomizedSearchCV(
+    logreg, param_distributions=param_dist,
+    n_iter=100, cv=5, verbose=1, n_jobs=-1,
+    random_state=42
+)
+
+# Fitting the model
+random_search.fit(X_train, y_train)
+
+# Print the best parameters found
+print("Best Hyperparameters:", random_search.best_params_)
+print("Best CV Score:", random_search.best_score_)
+
+# Use random_search.best_estimator_ as your model
+final_model = random_search.best_estimator_
+final_predictions = final_model.predict(X_test)
+
+# Final Model Evaluation
+print("Final Accuracy:", metrics.accuracy_score(y_test, final_predictions))
+print("Final Precision:", metrics.precision_score(y_test, final_predictions))
+print("Final Recall:", metrics.recall_score(y_test, final_predictions))
+
+
+
+
+
+
+
+
+===================================================
+NLP 
 
 # Assuming you have a DataFrame named 'df' with a text column named 'text_column'
 df['text_column'] = df['text_column'].str.lower()
@@ -231,6 +378,31 @@ result_series = squared_series.map(lambda x: str(x))
 
 
 
+
+================================================================================================================================
+Regex
+
+| Command | Description |
+|---------|-------------|
+| `.` | Matches any character except a newline. |
+| `^` | Anchors the start of a line. |
+| `$` | Anchors the end of a line. |
+| `*` | Matches 0 or more repetitions of the preceding character. |
+| `+` | Matches 1 or more repetitions of the preceding character. |
+| `?` | Matches 0 or 1 occurrence of the preceding character. |
+| `{m}` | Matches exactly m occurrences of the preceding character. |
+| `{m,}` | Matches m or more occurrences of the preceding character. |
+| `{m,n}` | Matches between m and n occurrences of the preceding character. |
+| `\\` | Escapes a special character. |
+| `[]` | Matches any single character within the brackets. |
+| `|` | Acts as an OR operator. |
+| `()` | Groups expressions as a single unit. |
+|
+
+
+serch
+match 
+findall 
 
 
 
